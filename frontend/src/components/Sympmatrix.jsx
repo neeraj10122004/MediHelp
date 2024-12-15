@@ -1,6 +1,19 @@
 import React from 'react';
 
-export const Sympmatrix = () => {
+export const Sympmatrix = ({ matrix, setMatrix }) => {
+
+  const setCellValue = (rowIndex, colIndex, value) => {
+    // Create a new matrix copy
+    const newMatrix = matrix.map((row, rIndex) => 
+      rIndex === rowIndex 
+        ? row.map((cell, cIndex) => (cIndex === colIndex ? value : cell)) 
+        : row
+    );
+
+    // Update the matrix with the new value
+    setMatrix(newMatrix);
+  };
+
   const createMatrix = () => {
     const data = [
       'itching', 'skin_rash', 'nodal_skin_eruptions', 'continuous_sneezing', 'shivering', 'chills', 'joint_pain', 'stomach_pain', 'acidity', 'ulcers_on_tongue', 'muscle_wasting', 'vomiting',
@@ -16,16 +29,19 @@ export const Sympmatrix = () => {
       'prominent_veins_on_calf', 'palpitations', 'painful_walking', 'pus_filled_pimples', 'blackheads', 'scarring', 'skin_peeling', 'silver_like_dusting', 'small_dents_in_nails', 'inflammatory_nails', 'blister', 'red_sore_around_nose',
       'yellow_crust_ooze',
     ];
+
     const rows = [];
     let k = 0;
 
     for (let i = 0; i < 11; i++) {
       const cols = [];
       for (let j = 0; j < 12; j++) {
+        const isSelected = matrix[i][j] === 1;  // Check if the cell is selected
         cols.push(
           <div
             key={`${i}-${j}`}
-            className="h-10 w-24 border border-gray-300 rounded-md flex items-center justify-center bg-gradient-to-r from-blue-100 to-blue-300 text-xs font-medium text-gray-800 break-words text-center p-1"
+            className={`h-10 w-24 border border-gray-300 rounded-md flex items-center justify-center text-xs font-medium text-gray-800 break-words text-center p-1 ${isSelected ? 'bg-green-500' : 'bg-gradient-to-r from-blue-100 to-blue-300'}`}
+            onClick={() => setCellValue(i, j, (matrix[i][j] + 1) % 2)} // Toggle between 0 and 1
           >
             {data[k++].replace(/_/g, ' ')} {/* Replace underscores with spaces */}
           </div>
@@ -41,8 +57,9 @@ export const Sympmatrix = () => {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-2 p-4 bg-gray-50 rounded-lg shadow-md">
+    <div className="flex flex-col items-center space-y-2 p-2 bg-gray-50 rounded-lg shadow-md">
       {createMatrix()}
     </div>
   );
 };
+

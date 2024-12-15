@@ -5,6 +5,7 @@ import { About } from './pages/About';
 import { Signin } from './pages/Signin';
 import { Userpage } from './pages/Userpage';
 import { Imsearch } from './pages/Imsearch';
+import { Services } from './pages/Services';
 
 function App() {
 
@@ -28,6 +29,10 @@ function App() {
           <Route
             path="/imsearch"
             element={<Imsearch/>}
+          />
+          <Route
+            path="/services"
+            element={<Services/>}
           />
         </Routes>
       </Router>

@@ -6,7 +6,7 @@ export const Imsearch = () => {
   return (
 
     <div>
-        <Nav/>
+        <Nav text={"Upload your Img"}/>
         <div className='flex justify-center items-end gap-10'>
             <div className='w-100 bg-black text-white'>
             di
