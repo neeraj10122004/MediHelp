@@ -135,6 +135,9 @@ const querySchema = new mongoose.Schema({
     red_sore_around_nose: String,
     yellow_crust_ooze: String,
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    urls : [String],
+    mlop : [String],
+    suggestions : [String]
 });
 
 module.exports = mongoose.models.Post || mongoose.model('Query', querySchema);
