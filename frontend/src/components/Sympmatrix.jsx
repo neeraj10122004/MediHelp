@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEffect } from 'react';
 
 export const Sympmatrix = ({ matrix, setMatrix }) => {
 
@@ -13,6 +14,9 @@ export const Sympmatrix = ({ matrix, setMatrix }) => {
     // Update the matrix with the new value
     setMatrix(newMatrix);
   };
+  
+
+
 
   const createMatrix = () => {
     const data = [
