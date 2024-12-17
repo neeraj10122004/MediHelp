@@ -9,12 +9,14 @@ export const Gridstyle = () => {
     const [matrix, setMatrix] = useState(
         Array.from({ length: 11 }, () => Array(12).fill(0))
       );
+    const [ou, setou] = useState('output')
     const submit = async () =>{
         try {
             const response = await axios.post('https://5000-neeraj10122004-medihelp-44vvu9arfl4.ws-us117.gitpod.io/submit', {
               matrix // Send the matrix as part of the request body
         });
             console.log('Response from server:', response.data);
+            setou(response.data);
             console.log(matrix);
             setoutput(true);
             setMatrix(Array.from({ length: 11 }, () => Array(12).fill(0)));
@@ -31,7 +33,7 @@ export const Gridstyle = () => {
             output && 
             <>
                 <div className='w- w-lvw h-lvh bg-white'>
-                    output
+                    output : {ou}
                     <button type="button" onClick={()=>{setoutput(false)}}>click</button>
                 </div>
             </>
