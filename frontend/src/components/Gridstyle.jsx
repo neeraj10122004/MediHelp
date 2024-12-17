@@ -16,7 +16,7 @@ export const Gridstyle = () => {
               matrix // Send the matrix as part of the request body
         });
             console.log('Response from server:', response.data);
-            setou(response.data);
+            setou(response.data.predictions)
             console.log(matrix);
             setoutput(true);
             setMatrix(Array.from({ length: 11 }, () => Array(12).fill(0)));
