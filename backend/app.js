@@ -33,6 +33,7 @@ app.post('/submit', async (req, res) => {
 
     // Ensure tensor shape matches model input requirements
     const inputTensor = tf.tensor(flattenedArray, [1, flattenedArray.length]);  // Adjust as per model's expected shape
+    
 
     // Make predictions
     const predictions = model.predict(inputTensor);
