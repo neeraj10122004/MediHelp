@@ -17,7 +17,7 @@ export const Services = () => {
             {!selec && (
                 <div>
                     
-                    {desc ? <> <Nav text={"Enter your Symptom Description"} /> <Descstyle /> </> : <><Nav  text={"Select your Symptoms "} /> <Gridstyle /> </>}
+                    {desc ? <>  <Descstyle /> </> : <> <Gridstyle /> </>}
                     
                 </div>
             )}

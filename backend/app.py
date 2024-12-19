@@ -7,7 +7,7 @@ import json
 import pandas as pd
 
 api_key = "AIzaSyCHcbZ83HTbR_TOcyCh9inGXblu8EZo-ZA"
-cx = "11420d340fa5b41a7"
+cx = "73ab211e213614850"
 dataa = [
       'itching', 'skin_rash', 'nodal_skin_eruptions', 'continuous_sneezing', 'shivering', 'chills', 'joint_pain', 'stomach_pain', 'acidity', 'ulcers_on_tongue', 'muscle_wasting', 'vomiting',
       'burning_micturition', 'spotting_urination', 'fatigue', 'weight_gain', 'anxiety', 'cold_hands_and_feets', 'mood_swings', 'weight_loss', 'restlessness', 'lethargy', 'patches_in_throat', 'irregular_sugar_level',
@@ -107,7 +107,7 @@ def submit():
                 # Display the DataFrame
             print(retu)
 
-        return jsonify({'predictions': ret , 'ulr':retu})
+        return jsonify({'predictions': ret , 'url':retu})
 
     except Exception as e:
         print(f"Error during prediction: {e}")
