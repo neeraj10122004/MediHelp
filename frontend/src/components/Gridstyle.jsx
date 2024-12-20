@@ -29,15 +29,18 @@ export const Gridstyle = () => {
       console.log(url)
       console.log(response.data.url)
       const newElements = response.data.url.map((item, index) => (
-        <div key={index} >
-        <div>
-        <a href={item.Link}>{item.Title}</a>
-        <p>{item.Link}</p>
-        <div>
-            {item.Snippet}
-        </div>
-    </div>
-        </div>
+        <div key={index} className='flex flex-col bg-white p-4 rounded-md gap-1 w-1/2'>
+          <div className="flex flex-col gap-4 p-4 rounded-lg shadow-lg bg-slate-200 hover:bg-slate-300 transition duration-200">
+  <div className="text-lg font-semibold text-blue-600 hover:underline">
+    <a href={item.Link}>{item.Title}</a>
+  </div>
+  <a href={item.Link} className="text-sm text-gray-500 break-words">{item.Link}</a>
+  <div className="text-gray-700">
+    {item.Snippet}
+  </div>
+</div>
+</div>
+
       ));
       setElements(newElements);
 
@@ -54,37 +57,44 @@ export const Gridstyle = () => {
       <div>
         {output ? (
           <>
-            <div className="w-lvw h-lvh bg-white">
-              <div className="flex items-center justify-between p-10">
-                <div className="flex items-center justify-center gap-10">
-                  <FaArrowLeft
-                    size={30}
-                    onClick={() => setOutput(false)}
-                    className="text-black cursor-pointer"
-                    aria-label="Go Back"
-                  />
-                </div>
-                <div className="flex items-center justify-center gap-5">
-                  <div>{name}</div>
-                  <div className="rounded-full">
-                    <Link to="/userpage">
-                      <img
-                        src={photo || '/default-avatar.png'}
-                        alt={name || 'User'}
-                        className="rounded-full"
-                        width="50"
-                        height="50"
-                      />
-                    </Link>
-                  </div>
+          <div className="bg-white fixed top-0 left-0 w-full shadow-md z-50">
+            <div className="flex items-center justify-between p-5">
+              <div className="flex items-center gap-10">
+                <FaArrowLeft
+                  size={30}
+                  onClick={() => setOutput(false)}
+                  className="text-black cursor-pointer"
+                  aria-label="Go Back"
+                />
+              </div>
+              <div className="flex flex-col bg-white p-4 rounded-md gap-1">
+                <div className="flex flex-col gap-4 p-4 rounded-lg shadow-lg bg-gradient-to-r from-blue-100 to-blue-300 hover:bg-slate-300 transition duration-200">
+                  {ou}
                 </div>
               </div>
-              <div>
-                <p>Output: {ou}</p>
+              <div className="flex items-center gap-5">
+                <div>{name}</div>
+                <div className="rounded-full">
+                  <Link to="/userpage">
+                    <img
+                      src={photo || '/default-avatar.png'}
+                      alt={name || 'User'}
+                      className="rounded-full"
+                      width="50"
+                      height="50"
+                    />
+                  </Link>
+                </div>
               </div>
-              <div>{elements}</div>
             </div>
-          </>
+          </div>
+        
+          {/* Add padding to prevent content overlap */}
+          <div className=" pt-32">
+            <div>{elements}</div>
+          </div>
+        </>
+        
         ) : (
           <>
             <Sympmatrix matrix={matrix} setMatrix={setMatrix} />
