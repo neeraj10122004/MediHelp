@@ -33,7 +33,7 @@ export const Navbar = ({loc}) => {
         </div>
       </div>
       <div className="flex items-center justify-center gap-5">
-        <div>{data.name || "Guest"}</div>
+        <div className=' bg-gray-100 cursor-pointer p-3 rounded-full ' onClick={()=>{localStorage.removeItem('token');localStorage.removeItem('data'); window.location.reload()}}>Logout</div>
         <div
           className={`rounded-full ${
             loc === "Userpage" ? "bg-gray-100 p-3" : ""
@@ -41,8 +41,8 @@ export const Navbar = ({loc}) => {
         >
           <Link to="/userpage">
             <img
-              src={data.picture || "/default-avatar.png"}
-              alt={data.name || "User"}
+              src={data? data.picture : 'user' || "/default-avatar.png"}
+              alt={data? data.name : 'user' || "User"}
               className="rounded-full"
               width="50"
               height="50"
