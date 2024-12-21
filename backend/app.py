@@ -6,6 +6,7 @@ import requests
 import json
 import pandas as pd
 import google.generativeai as genai
+import re
 genai.configure(api_key="AIzaSyA50tLF5dWf8KZ1B1vztgwj4Za7Yzt-w6M")
 
 
@@ -29,7 +30,9 @@ app = Flask(__name__)
 
 # Allow CORS for your frontend
 from flask_cors import CORS
+
 CORS(app, resources={r"/submit": {"origins": "https://5173-neeraj10122004-medihelp-44vvu9arfl4.ws-us117.gitpod.io"}})
+CORS(app, resources={r"/submit2": {"origins": "https://5173-neeraj10122004-medihelp-44vvu9arfl4.ws-us117.gitpod.io"}})
 
 # Serve model files statically
 app.config['MODEL_DIR'] = os.path.join(os.getcwd(), 'models')
@@ -53,6 +56,159 @@ def submit():
                 query+="+"
                 query+=str(dataa[i])
                 llm+=f"+ {str(dataa[i])}"
+
+        print(flattened_array.shape)
+
+        # Load the model
+        model = tf.keras.models.load_model('medical.h5')  # Adjust the path if necessary
+
+        # Ensure input shape is correct for the model
+        input_tensor = np.expand_dims(flattened_array, axis=0)  # Add batch dimension
+
+        # Make predictions
+        predictions = model.predict(input_tensor)
+        print(predictions)
+        # Send predictions as JSON response
+        predictions=predictions.tolist()
+        print(predictions)
+        illness=['Fungal infection', 'Allergy', 'GERD', 'Chronic cholestasis', 'Drug Reaction','Peptic ulcer disease', 'AIDS', 'Diabetes', 'Gastroenteritis', 'Bronchial Asthma', 'Hypertension', 'Migraine', 'Cervical spondylosis', 'Paralysis (brain hemorrhage)', 'Jaundice', 'Malaria', 'Chicken pox', 'Dengue', 'Typhoid', 'hepatitis A', 'Hepatitis B', 'Hepatitis C', 'Hepatitis D', 'Hepatitis E', 'Alcoholic hepatitis', 'Tuberculosis', 'Common Cold', 'Pneumonia', 'Dimorphic hemorrhoids (piles)', 'Heart attack', 'Varicose veins', 'Hypothyroidism', 'Hyperthyroidism', 'Hypoglycemia', 'Osteoarthritis', 'Arthritis', '(vertigo) Paroxysmal Positional Vertigo', 'Acne', 'Urinary tract infection', 'Psoriasis', 'Impetigo']
+        # Convert predictions to a flat list
+        predictions = predictions[0]  # Extract the first row (since batch size is 1)
+        max_value = max(predictions)
+        max_index = predictions.index(max_value)
+
+
+        # Find the index of the maximum element
+        max_index =predictions.index(max_value)
+        print(max_index)
+        print(illness[max_index])
+        st=str(illness[max_index])
+        val=str(max_value)
+        ret=f" {val} : {st}"
+        query+=st
+        llm+=f" expecting condition : {st}"
+        query=query[1:]
+        print(ret)
+        print(query)
+        url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={cx}&q={query}"
+        response = requests.get(url)
+        data = json.loads(response.text)
+        retu=[]
+
+        # Check for errors or empty search results
+        if 'error' in data:
+            print("Error:", data['error']['message'])
+        elif 'items' not in data:
+            print("No search results found.")
+        else:
+            # Extract search results
+            search_results = data['items']
+
+            # Create a list to store the data
+            all_data = []
+            for result in search_results:
+                title = result['title']
+                link = result['link']
+                snippet = result['snippet']
+                all_data.append({'Title': title, 'Link': link, 'Snippet': snippet})
+                # Create a pandas DataFrame using pd.DataFrame()
+            retu=all_data
+
+                # Display the DataFrame
+            print(retu)
+        print("llm response : ")
+        print(llm)
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(llm,
+        generation_config = genai.GenerationConfig(
+        max_output_tokens=1000,
+        temperature=0.1,
+
+            ),
+                                  safety_settings={'HARASSMENT':'block_none'}
+        )
+        print(response.text)
+        return jsonify({'predictions': ret , 'url':retu,'llm' : response.text})
+
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        return jsonify({'error': 'An error occurred while processing your request.'}), 500
+
+@app.route('/submit2', methods=['POST'])
+def submit2():
+    print("submit2")
+    llm=""
+    try:
+        data = request.get_json()
+        textinput = data.get('textinput',"")
+        print(textinput)
+        # Define the prompt
+        prompt = (
+            f"You are an intelligent assistant tasked with extracting symptoms from a predefined dataset based on a user-provided text description. "
+            f"The dataset, called 'dataa', contains the following symptoms: {dataa}. "
+            f"Analyze the user's text input and match the mentioned symptoms to those in the dataset. "
+            f"If a symptom is implied or synonymous with those in the dataset, include it in the output. "
+            f"The result should be a concise list of matching symptoms.\n\n"
+            f"User's text input: {textinput}\n\n"
+            f"Output format:\n"
+            f"- List of matching symptoms: [symptom1, symptom2, symptom3, ...]\n\n"
+            f"Generate the list of matching symptoms now."
+        )
+
+        print(prompt)
+
+        # Initialize the Generative AI model
+        model = genai.GenerativeModel('gemini-pro')
+
+        # Generate the response
+        response = model.generate_content(
+        prompt,
+        generation_config=genai.GenerationConfig(
+        max_output_tokens=1000,
+        temperature=0.1,
+        ),
+        safety_settings={'HARASSMENT': 'block_none'}
+        )
+
+
+    
+
+# Output from the model
+        output_text = response.text
+
+# Extract symptoms from the output
+        extracted_symptoms = re.findall(r"- (.+)", output_text)
+
+# Verify symptoms against the dataset
+        verified_symptoms = [symptom for symptom in extracted_symptoms if symptom in dataa]
+
+# Print results
+        print("Extracted Symptoms:", extracted_symptoms)
+        print("Verified Symptoms:", verified_symptoms)
+
+# Print the response
+        print(response.text)
+
+
+
+
+        query = ""
+        llm+="symptoms : "
+        
+        # Flatten the matrix into a 1D array
+        array=[]
+        jj=0
+        for i in range(0,len(dataa)):
+            if(jj<len(verified_symptoms)):
+                if(verified_symptoms[jj]==dataa[i]):
+                    array.append(1)
+                else:
+                    array.append(0)
+            else:
+                array.append(0)
+            jj+=1
+        
+        flattened_array = np.array(array)
 
         print(flattened_array.shape)
 
