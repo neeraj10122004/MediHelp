@@ -2,6 +2,9 @@ import React from 'react';
 import { Link, redirect } from 'react-router-dom';
 
 export const Navbar = ({loc}) => {
+  const data = JSON.parse(localStorage.getItem('data'));
+
+  console.log(data)
   return (
     <div className="flex items-center justify-between p-10">
       <div className="flex items-center justify-center gap-10">
@@ -30,7 +33,7 @@ export const Navbar = ({loc}) => {
         </div>
       </div>
       <div className="flex items-center justify-center gap-5">
-        <div>{name || "Guest"}</div>
+        <div>{data.name || "Guest"}</div>
         <div
           className={`rounded-full ${
             loc === "Userpage" ? "bg-gray-100 p-3" : ""
@@ -38,8 +41,8 @@ export const Navbar = ({loc}) => {
         >
           <Link to="/userpage">
             <img
-              src={"photo" || "/default-avatar.png"}
-              alt={"name" || "User"}
+              src={data.picture || "/default-avatar.png"}
+              alt={data.name || "User"}
               className="rounded-full"
               width="50"
               height="50"
