@@ -3,8 +3,16 @@ import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { FaCamera } from 'react-icons/fa';
 import { Link, redirect } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 export const About = () => {
+  const navigate = useNavigate();
+    useEffect(() => {
+      if(localStorage.getItem('token')==null){
+        navigate('/');
+      }
+    }, [])
 
   return (
     <div>

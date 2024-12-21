@@ -6,8 +6,16 @@ import { Sympmatrix } from '../components/Sympmatrix';
 import { MdOutlineMedicalServices } from "react-icons/md";
 import { FaExclamationTriangle } from "react-icons/fa";
 import { FaCommentMedical } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 export const Home = () => {
+  const navigate = useNavigate();
+    useEffect(() => {
+      if(localStorage.getItem('token')==null){
+        navigate('/');
+      }
+    }, [])
   return (
     <div>
         <Navbar loc="Home"/>

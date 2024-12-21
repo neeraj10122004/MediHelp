@@ -4,8 +4,16 @@ import { FaCamera } from 'react-icons/fa'
 import { Link, redirect } from 'react-router-dom';
 import { FaExclamationTriangle } from "react-icons/fa";
 import { FaCommentMedical } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 export const Userpage = () => {
+  const navigate = useNavigate();
+      useEffect(() => {
+        if(localStorage.getItem('token')==null){
+          navigate('/');
+        }
+      }, [])
   return (
     <div>
         <Navbar loc="Usepage"/>
