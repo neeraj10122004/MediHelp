@@ -1,9 +1,20 @@
 import React from 'react'
-import { Navbar } from '../components/Navbar'
-import { FaCamera } from 'react-icons/fa'
+import { GoogleLogin } from '@react-oauth/google';
+
+
 export const Signin = () => {
   return (
     <div>
+      
+      <GoogleLogin
+  onSuccess={credentialResponse => {
+    console.log(credentialResponse);
+    
+  }}
+  onError={() => {
+    console.log('Login Failed');
+  }}
+/>
 
     </div>
   )
