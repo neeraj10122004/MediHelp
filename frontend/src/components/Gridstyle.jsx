@@ -10,6 +10,7 @@ export const Gridstyle = () => {
   const [output, setOutput] = useState(false);
   const [url, setUrl] = useState([]);
   const [elements, setElements] = useState([]);
+  const [llmresp, setllmresp] = useState("None")
   const [matrix, setMatrix] = useState(
     Array.from({ length: 11 }, () => Array(12).fill(0))
   );
@@ -25,11 +26,12 @@ export const Gridstyle = () => {
       );
       console.log('Response from server:', response.data);
       setOu(response.data.predictions);
+      setllmresp(response.data.llm || "none");
       setUrl(response.data.url || []);
       console.log(url)
       console.log(response.data.url)
       const newElements = response.data.url.map((item, index) => (
-        <div key={index} className='flex flex-col bg-white p-4 rounded-md gap-1 w-1/2'>
+        <div key={index} className='flex flex-col bg-white p-4 rounded-md gap-1'>
           <div className="flex flex-col gap-4 p-4 rounded-lg shadow-lg bg-slate-200 hover:bg-slate-300 transition duration-200">
   <div className="text-lg font-semibold text-blue-600 hover:underline">
     <a href={item.Link}>{item.Title}</a>
@@ -90,9 +92,25 @@ export const Gridstyle = () => {
           </div>
         
           {/* Add padding to prevent content overlap */}
-          <div className=" pt-32">
-            <div>{elements}</div>
-          </div>
+          <div className="pt-32 h-screen">
+  <div className="flex flex-row h-full">
+    {/* Left panel - scrollable */}
+    <div className="flex-1 overflow-y-auto h-full">
+      {elements}
+    </div>
+    
+    {/* Right panel - fixed */}
+    
+    <div className="w-1/2 h-full flex flex-col gap-4 p-4 ">
+    <div className='rounded-lg p-3 shadow-lg bg-slate-200 hover:bg-slate-300 transition duration-200'>
+    {llmresp}
+    </div>
+      
+    </div>
+  </div>
+</div>
+
+
         </>
         
         ) : (

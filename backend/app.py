@@ -5,6 +5,9 @@ import os
 import requests
 import json
 import pandas as pd
+import google.generativeai as genai
+genai.configure(api_key="AIzaSyA50tLF5dWf8KZ1B1vztgwj4Za7Yzt-w6M")
+
 
 api_key = "AIzaSyCHcbZ83HTbR_TOcyCh9inGXblu8EZo-ZA"
 cx = "73ab211e213614850"
@@ -33,11 +36,13 @@ app.config['MODEL_DIR'] = os.path.join(os.getcwd(), 'models')
 
 @app.route('/submit', methods=['POST'])
 def submit():
+    llm=""
     try:
         data = request.get_json()
         matrix = data.get('matrix', [])
         query = ""
         print('Received Matrix:', matrix)
+        llm+="symptoms : "
 
         # Flatten the matrix into a 1D array
         flattened_array = np.array(matrix).flatten()
@@ -47,6 +52,7 @@ def submit():
 
                 query+="+"
                 query+=str(dataa[i])
+                llm+=f"+ {str(dataa[i])}"
 
         print(flattened_array.shape)
 
@@ -77,6 +83,7 @@ def submit():
         val=str(max_value)
         ret=f" {val} : {st}"
         query+=st
+        llm+=f" expecting condition : {st}"
         query=query[1:]
         print(ret)
         print(query)
@@ -106,8 +113,19 @@ def submit():
 
                 # Display the DataFrame
             print(retu)
+        print("llm response : ")
+        print(llm)
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(llm,
+        generation_config = genai.GenerationConfig(
+        max_output_tokens=1000,
+        temperature=0.1,
 
-        return jsonify({'predictions': ret , 'url':retu})
+            ),
+                                  safety_settings={'HARASSMENT':'block_none'}
+        )
+        print(response.text)
+        return jsonify({'predictions': ret , 'url':retu,'llm' : response.text})
 
     except Exception as e:
         print(f"Error during prediction: {e}")
