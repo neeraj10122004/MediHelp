@@ -17,7 +17,7 @@ export const Descstyle = () => {
   const submit = async () => {
     try {
       const response = await axios.post(
-        'https://5000-neeraj10122004-medihelp-44vvu9arfl4.ws-us117.gitpod.io/submit2',
+        'http://localhost:5000//submit2',
         { textinput }
       );
 

@@ -7,8 +7,13 @@ import json
 import pandas as pd
 import google.generativeai as genai
 import re
-genai.configure(api_key="AIzaSyA50tLF5dWf8KZ1B1vztgwj4Za7Yzt-w6M")
+import pymongo
+from pymongo import *
 
+genai.configure(api_key="AIzaSyA50tLF5dWf8KZ1B1vztgwj4Za7Yzt-w6M")
+cluster = MongoClient("mongodb+srv://root:root@cluster0.q6rbb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+db = cluster["MediHelp"]
+collection = db["MediHelp"]
 
 api_key = "AIzaSyCHcbZ83HTbR_TOcyCh9inGXblu8EZo-ZA"
 cx = "73ab211e213614850"
@@ -31,11 +36,30 @@ app = Flask(__name__)
 # Allow CORS for your frontend
 from flask_cors import CORS
 
-CORS(app, resources={r"/submit": {"origins": "https://5173-neeraj10122004-medihelp-44vvu9arfl4.ws-us117.gitpod.io"}})
-CORS(app, resources={r"/submit2": {"origins": "https://5173-neeraj10122004-medihelp-44vvu9arfl4.ws-us117.gitpod.io"}})
+CORS(app, resources={r"/submit": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/submit2": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/create_verify_user": {"origins": "http://localhost:5173"}})
 
 # Serve model files statically
 app.config['MODEL_DIR'] = os.path.join(os.getcwd(), 'models')
+
+@app.route('/create_verify_user', methods=['POST'])
+def create_verify_user():
+    print("create_verify_user")
+    try:
+        data = request.get_json()
+        id = data.get('googleid','')
+        try: 
+            db.my_collection.insert_one({"_id": id,"history":[]})
+            return jsonify({'predictions': 'done'})
+        except Exception as e:
+            return jsonify({'predictions': 'already exist'})
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        return jsonify({'error': 'An error occurred while processing your request.'}), 500
+
+
+
 
 @app.route('/submit', methods=['POST'])
 def submit():

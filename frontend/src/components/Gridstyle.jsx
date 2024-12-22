@@ -21,7 +21,7 @@ export const Gridstyle = () => {
   const submit = async () => {
     try {
       const response = await axios.post(
-        'https://5000-neeraj10122004-medihelp-44vvu9arfl4.ws-us117.gitpod.io/submit',
+        'http://localhost:5000/submit2',
         { matrix }
       );
       console.log('Response from server:', response.data);
