@@ -7,13 +7,13 @@ import json
 import pandas as pd
 import google.generativeai as genai
 import re
+from datetime import datetime
 import pymongo
 from pymongo import *
 
 genai.configure(api_key="AIzaSyA50tLF5dWf8KZ1B1vztgwj4Za7Yzt-w6M")
 cluster = MongoClient("mongodb+srv://root:root@cluster0.q6rbb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 db = cluster["MediHelp"]
-collection = db["MediHelp"]
 
 api_key = "AIzaSyCHcbZ83HTbR_TOcyCh9inGXblu8EZo-ZA"
 cx = "73ab211e213614850"
@@ -39,7 +39,8 @@ from flask_cors import CORS
 CORS(app, resources={r"/submit": {"origins": "http://localhost:5173"}})
 CORS(app, resources={r"/submit2": {"origins": "http://localhost:5173"}})
 CORS(app, resources={r"/create_verify_user": {"origins": "http://localhost:5173"}})
-
+CORS(app, resources={r"/add_record": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/view_record": {"origins": "http://localhost:5173"}})
 # Serve model files statically
 app.config['MODEL_DIR'] = os.path.join(os.getcwd(), 'models')
 
@@ -50,7 +51,7 @@ def create_verify_user():
         data = request.get_json()
         id = data.get('googleid','')
         try: 
-            db.my_collection.insert_one({"_id": id,"history":[]})
+            db.MediHelp.insert_one({"_id": id,"history":[]})
             return jsonify({'predictions': 'done'})
         except Exception as e:
             return jsonify({'predictions': 'already exist'})
@@ -70,16 +71,16 @@ def submit():
         query = ""
         print('Received Matrix:', matrix)
         llm+="symptoms : "
+        user_symptoms=[]
 
         # Flatten the matrix into a 1D array
         flattened_array = np.array(matrix).flatten()
         print('Flattened Matrix:', flattened_array)
         for i in range(0,len(flattened_array)):
             if(flattened_array[i]==1):
-
-                query+="+"
-                query+=str(dataa[i])
-                llm+=f"+ {str(dataa[i])}"
+                user_symptoms.append(str(dataa[i]))
+                query+=f" {str(dataa[i])}"
+                llm+=f" {str(dataa[i])}"
 
         print(flattened_array.shape)
 
@@ -152,7 +153,7 @@ def submit():
                                   safety_settings={'HARASSMENT':'block_none'}
         )
         print(response.text)
-        return jsonify({'predictions': ret , 'url':retu,'llm' : response.text})
+        return jsonify({'predictions': ret , 'url':retu,'llm' : response.text,'symptoms' : user_symptoms})
 
     except Exception as e:
         print(f"Error during prediction: {e}")
@@ -223,17 +224,15 @@ def submit2():
         array=[]
         jj=0
         for i in range(0,len(dataa)):
-            if(jj<len(verified_symptoms)):
-                if(verified_symptoms[jj]==dataa[i]):
-                    array.append(1)
-                else:
-                    array.append(0)
-            else:
-                array.append(0)
-            jj+=1
+            array.append(0)
+        for j in verified_symptoms:
+            query=query + f" {j}"
+            llm= llm + f" {j}"
+            array[dataa.index(j)]=1
+                
         
         flattened_array = np.array(array)
-
+        print(flattened_array)
         print(flattened_array.shape)
 
         # Load the model
@@ -262,7 +261,7 @@ def submit2():
         st=str(illness[max_index])
         val=str(max_value)
         ret=f" {val} : {st}"
-        query+=st
+        query+=f" {st}"
         llm+=f" expecting condition : {st}"
         query=query[1:]
         print(ret)
@@ -305,8 +304,48 @@ def submit2():
                                   safety_settings={'HARASSMENT':'block_none'}
         )
         print(response.text)
-        return jsonify({'predictions': ret , 'url':retu,'llm' : response.text})
+        return jsonify({'predictions': ret , 'url':retu,'llm' : response.text, 'extracted_symptoms': extracted_symptoms ,'symptoms': verified_symptoms })
 
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        return jsonify({'error': 'An error occurred while processing your request.'}), 500
+    
+@app.route('/add_record', methods=['POST'])
+def add_record():
+    print("add_record")
+    try:
+        data = request.get_json()
+        print(data)
+        id = data.get('googleid','')
+        predictions=data.get('predictions','') 
+        url=data.get('url',[]) 
+        llm=data.get('llm','') 
+        extracted_symptoms=data.get('extracted_symptoms',[]) 
+        symptoms = data.get('symptoms',[]) 
+        now = datetime.now()
+        date = now.strftime("%Y-%m-%d")
+        print("hello")
+        document = db.MediHelp.find_one({"_id": id})
+        print(document)
+        history = list(document.get('history',[])) 
+        print(history)
+        history.append({'date':date,'predictions':predictions,'url':url,'llm':llm,'extracted_symptoms':extracted_symptoms,'symptoms':symptoms})
+        db.MediHelp.update_one({"_id": id},{"$set":{"history":history}})
+        return jsonify({'predictions': 'done'})
+            
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        return jsonify({'error': 'An error occurred while processing your request.'}), 500
+
+@app.route('/view_record', methods=['POST'])
+def view_record():
+    print("view_record")
+    try:
+        data = request.get_json()
+        id = data.get('googleid','')
+        document = db.MediHelp.find_one({"_id": id})
+        history = document.get('history',[]) 
+        return jsonify({'history': history})
     except Exception as e:
         print(f"Error during prediction: {e}")
         return jsonify({'error': 'An error occurred while processing your request.'}), 500

@@ -6,17 +6,60 @@ import { FaExclamationTriangle } from "react-icons/fa";
 import { FaCommentMedical } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import axios from 'axios';
+import { useState } from 'react';
 
 export const Userpage = () => {
+  const [history, sethistory] = useState(null)
+  const data = JSON.parse(localStorage.getItem('data'));
+
+  console.log(data)
+  const getdata =async () =>{
+    const response =await axios.post('http://localhost:5000//view_record',{googleid : data.sub });
+    
+    sethistory(response.data.history);
+  };
+  
   const navigate = useNavigate();
       useEffect(() => {
         if(localStorage.getItem('token')==null){
           navigate('/');
         }
+        getdata()
       }, [])
   return (
+    
     <div>
+      {
+        console.log(history)
+      }
         <Navbar loc="Usepage"/>
+        <div>
+  {history === null ? (
+    <div>hi</div>
+  ) : (
+    history.map((a, index) => (
+      <div key={index} className='w-1/3 bg-slate-300'>
+        <div className='flex gap-3'>
+        <div>
+        {a.predictions}
+        </div>
+        <div>
+        {a.date}
+        </div>
+        </div>
+        <div>
+        {a.llm}
+        </div>
+      </div>
+    ))
+  )}
+</div>
+
+        
+          
+
+        
 
         <div
         className="p-4 fixed w-14 h-14 bottom-10 right-10 bg-slate-600 text-white hover:bg-slate-700 cursor-pointer shadow-lg rounded-full flex justify-center items-center"

@@ -11,9 +11,18 @@ export const Descstyle = () => {
   const [elements, setElements] = useState([]);
   const [llmresp, setLlmresp] = useState("None");
   const [ou, setOu] = useState('output');
-  const name = 'Guest'; // Replace with actual logic for fetching user name
-  const photo = null; // Replace with actual logic for fetching user photo
-
+  const data = JSON.parse(localStorage.getItem('data'));
+  const name =  data.name || 'Guest'; 
+  const photo =  data.picture || null; 
+  
+  
+  const save = async (dataa) =>{
+    const response = await axios.post(
+      'http://localhost:5000/add_record',
+       { googleid : JSON.parse(localStorage.getItem('data')).sub ,predictions : dataa.predictions,url : dataa.url ,llm : dataa.llm,extracted_symptoms: dataa.extracted_symptoms,symptoms : data.symptoms }
+    );
+    console.log(response);
+  };
   const submit = async () => {
     try {
       const response = await axios.post(
@@ -46,6 +55,7 @@ export const Descstyle = () => {
       setElements(newElements);
 
       setOutput(true);
+      save(response.data);
     } catch (error) {
       console.error('Error submitting the matrix:', error);
     }

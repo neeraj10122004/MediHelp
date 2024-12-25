@@ -15,13 +15,22 @@ export const Gridstyle = () => {
     Array.from({ length: 11 }, () => Array(12).fill(0))
   );
   const [ou, setOu] = useState('output');
-  const name = 'Guest'; // Replace with actual logic for fetching user name
-  const photo = null; // Replace with actual logic for fetching user photo
-
+  const data = JSON.parse(localStorage.getItem('data'));
+  const name =  data.name || 'Guest'; 
+  const photo =  data.picture || null; 
+  
+  
+  const save = async (dataa) =>{
+    const response = await axios.post(
+      'http://localhost:5000/add_record',
+       { googleid : JSON.parse(localStorage.getItem('data')).sub ,predictions : dataa.predictions,url : dataa.url ,llm : dataa.llm,extracted_symptoms: dataa.symptoms,symptoms : data.symptoms }
+    );
+    console.log(response);
+  };
   const submit = async () => {
     try {
       const response = await axios.post(
-        'http://localhost:5000/submit2',
+        'http://localhost:5000/submit',
         { matrix }
       );
       console.log('Response from server:', response.data);
@@ -47,11 +56,13 @@ export const Gridstyle = () => {
       setElements(newElements);
 
       setOutput(true);
+      save(response.data);
       setMatrix(Array.from({ length: 11 }, () => Array(12).fill(0)));
     } catch (error) {
       console.error('Error submitting the matrix:', error);
     }
   };
+
 
   return (
     <>

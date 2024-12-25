@@ -10,6 +10,7 @@ import { useEffect } from 'react';
 export const Services = () => {
     const [selec, setselec] = useState(true);  // Shows the Select component
     const [desc, setdesc] = useState(true);    // Determines whether to show Description or Grid
+    
     const navigate = useNavigate();
         useEffect(() => {
           if(localStorage.getItem('token')==null){
