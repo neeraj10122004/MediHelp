@@ -33,7 +33,7 @@ export const Signin =  () => {
   }, [])
   
   return (
-    <div>
+    <div className='flex-row justify-center items-center align-middle'>
       
       <GoogleLogin
   onSuccess={ credentialResponse => {

@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import axios from 'axios';
 import { useState } from 'react';
-
+import Record from '../components/Record';
 export const Userpage = () => {
   const [history, sethistory] = useState(null)
   const data = JSON.parse(localStorage.getItem('data'));
@@ -39,19 +39,7 @@ export const Userpage = () => {
     <div>hi</div>
   ) : (
     history.map((a, index) => (
-      <div key={index} className='w-1/3 bg-slate-300'>
-        <div className='flex gap-3'>
-        <div>
-        {a.predictions}
-        </div>
-        <div>
-        {a.date}
-        </div>
-        </div>
-        <div>
-        {a.llm}
-        </div>
-      </div>
+      <Record key={index} record={a}/>
     ))
   )}
 </div>
@@ -68,7 +56,7 @@ export const Userpage = () => {
          <Link to="/imsearch"> <FaCamera size={30} className="text-white" /> </Link>
       </div>
       <div className="p-4 fixed w-14 h-14 bottom-28 right-10 bg-slate-600 text-white hover:bg-slate-700 cursor-pointer shadow-lg rounded-full flex justify-center items-center">
-        <Link to="/imsearch"> <FaCommentMedical size={30} className="text-white" /> </Link>
+        <Link to="/chat"> <FaCommentMedical size={30} className="text-white" /> </Link>
       </div>
       <div className="p-4 fixed w-58 break-words border bottom-10 left-10 bg-orange-100 cursor-pointer shadow-lg rounded-md flex justify-center items-center">
           <FaExclamationTriangle size={25}/>
