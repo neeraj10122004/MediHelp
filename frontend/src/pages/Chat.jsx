@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Nav } from "../components/Nav";
+import axios from "axios";
 
 export const Chat = () => {
   const [prompts, setPrompts] = useState([]); 
@@ -31,8 +32,9 @@ export const Chat = () => {
     }
 
     const userMessage = { role: "user", text: userInput };
+    const Bot = await axios.post('http://localhost:5000/chat',{resp : userInput });
     
-    const botResponse = { role: "bot", text: `AI response to: ${userInput}` }; 
+    const botResponse = { role: "bot", text: `${Bot.data.result}` }; 
 
     setPrompts([...prompts, userMessage, botResponse]); 
     setUserInput(""); 

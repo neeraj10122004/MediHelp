@@ -11,7 +11,7 @@ from datetime import datetime
 import pymongo
 from pymongo import *
 
-genai.configure(api_key="AIzaSyDu-3OzKmTw3AmtHWKz0DC411mYDYzjWtI")
+genai.configure(api_key="AIzaSyDEWge2PzWvKDCLHkPFhD4xdsvB7GPSqss")
 cluster = MongoClient("mongodb+srv://root:root@cluster0.q6rbb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 db = cluster["MediHelp"]
 
@@ -33,6 +33,90 @@ dataa = [
       'prominent_veins_on_calf', 'palpitations', 'painful_walking', 'pus_filled_pimples', 'blackheads', 'scarring', 'skin_peeling', 'silver_like_dusting', 'small_dents_in_nails', 'inflammatory_nails', 'blister', 'red_sore_around_nose',
       'yellow_crust_ooze',
     ]
+import ast 
+
+df = pd.read_csv('embedding.csv')
+df['Embeddings'] = df['Embeddings'].apply(ast.literal_eval)
+import random
+
+def find_best_passage3(query, dataframe, top_k=3, noise_factor=0.01):
+    """
+    Compute the cosine similarity between the query and each document in the dataframe,
+    with a bit of randomness for more accurate and diverse results.
+    """
+    model1 = genai.GenerativeModel('gemini-1.5-pro-latest')
+    a1 = model1.generate_content(f'''Convert the following user query into a structured JSON format with specified fields:
+
+User Query: "{query}"
+
+The output should include:
+- **Personal Information**: Age, Gender, Height, Weight, Activity Level, Dietary Preference.
+- **Nutrition Targets**: Daily Calorie Target, Protein, Sugar, Sodium, Carbohydrates, Fiber, Fat.
+- **Health Condition**: Disease or dietary focus.
+
+Ensure the format matches the example structure and do not enter any commnets etc andmentioin 0 if any daat is not devicable:
+"
+  "Ages": 25,
+  "Gender": "Male",
+  "Height": 180,
+  "Weight": 80,
+  "Activity Level": "Moderately Active",
+  "Dietary Preference": "Omnivore",
+  "Daily Calorie Target": 2000,
+  "Protein": 120,
+  "Sugar": 125.0,
+  "Sodium": 24.0,
+  "Calories": 2020,
+  "Carbohydrates": 250,
+  "Fiber": 30.0,
+  "Fat": 60,
+  "Disease": "Weight Gain""
+'''
+)
+    embed_model = 'models/embedding-001'
+
+    print(a1.text)
+    query_embedding = genai.embed_content(
+        model=embed_model,
+        content=a1.text,
+        task_type="retrieval_query"
+    )["embedding"]
+    
+    doc_embeddings = np.stack(dataframe['Embeddings'])  
+    
+    
+    doc_embeddings_norm = doc_embeddings / np.linalg.norm(doc_embeddings, axis=1, keepdims=True)
+    query_embedding_norm = query_embedding / np.linalg.norm(query_embedding)  
+    
+  
+    cosine_similarities = np.dot(doc_embeddings_norm, query_embedding_norm)
+   
+    cosine_similarities += np.random.uniform(-noise_factor, noise_factor, size=cosine_similarities.shape)
+    
+   
+    top_k_indices = np.argsort(cosine_similarities)[-top_k:]  
+    
+    
+    chosen_idx = random.choice(top_k_indices)
+    
+    return dataframe.iloc[chosen_idx]['Text'] 
+def make_prompt(query, relevant_passage):
+  
+  escaped = relevant_passage.replace("'", "").replace('"', "").replace("\n", " ")
+  prompt = """You are a helpful and informative bot that answers questions using text from the reference passage included below. \
+  However, you are talking to a non-technical audience, so be sure to break down complicated concepts and \
+  strike a friendly and converstional tone. \
+  just use this passage as an reference and generate dite plan and ignore the disease part depend more on passage for diet suggistions and dont mention any comments
+  use diete plan used in passage only and dont explain just specift the dite plan
+  QUESTION: '{query}'
+  PASSAGE: '{relevant_passage}'
+
+    ANSWER:
+  """.format(query=query, relevant_passage=escaped)
+
+  return prompt
+
+
 app = Flask(__name__)
 
 # Allow CORS for your frontend
@@ -43,6 +127,7 @@ CORS(app, resources={r"/submit2": {"origins": "http://localhost:5173"}})
 CORS(app, resources={r"/create_verify_user": {"origins": "http://localhost:5173"}})
 CORS(app, resources={r"/add_record": {"origins": "http://localhost:5173"}})
 CORS(app, resources={r"/view_record": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/chat": {"origins": "http://localhost:5173"}})
 # Serve model files statically
 app.config['MODEL_DIR'] = os.path.join(os.getcwd(), 'models')
 
@@ -360,8 +445,12 @@ def chat():
     try:
         data = request.get_json()
         resp = data.get('resp','')
-        
-        return jsonify({'resp': resp})
+        passage = find_best_passage3(resp, df)
+        prompt = make_prompt(resp, passage)
+        model1 = genai.GenerativeModel('gemini-1.5-pro-latest')
+        answer = model1.generate_content(prompt)
+
+        return jsonify({'result': answer.text})
     except Exception as e:
         print(f"Error during prediction: {e}")
         return jsonify({'error': 'An error occurred while processing your request.'}), 500
