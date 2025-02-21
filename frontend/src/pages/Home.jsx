@@ -40,7 +40,7 @@ export const Home = () => {
         className="p-4 fixed w-14 h-14 bottom-28 right-10 bg-slate-600 text-white hover:bg-slate-700 cursor-pointer shadow-lg rounded-full flex justify-center items-center"
 
       >
-         <Link to="/imsearch"> <FaCommentMedical size={30} className="text-white" /> </Link>
+         <Link to="/chat"> <FaCommentMedical size={30} className="text-white" /> </Link>
          
       </div>
       <div

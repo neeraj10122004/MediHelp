@@ -11,10 +11,12 @@ from datetime import datetime
 import pymongo
 from pymongo import *
 
-genai.configure(api_key="AIzaSyA50tLF5dWf8KZ1B1vztgwj4Za7Yzt-w6M")
+genai.configure(api_key="AIzaSyDu-3OzKmTw3AmtHWKz0DC411mYDYzjWtI")
 cluster = MongoClient("mongodb+srv://root:root@cluster0.q6rbb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 db = cluster["MediHelp"]
 
+#api_key = "AIzaSyBHyLJ20AujrTdKg3GrVdoDpsquQ_kcPB0"
+#cx = "d7f2fb0f0d77049cc"
 api_key = "AIzaSyCHcbZ83HTbR_TOcyCh9inGXblu8EZo-ZA"
 cx = "73ab211e213614850"
 dataa = [
@@ -266,7 +268,10 @@ def submit2():
         query=query[1:]
         print(ret)
         print(query)
+        
+
         url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={cx}&q={query}"
+        ##url="https://cse.google.com/cse?cx=73ab211e213614850"
         response = requests.get(url)
         data = json.loads(response.text)
         retu=[]
@@ -350,5 +355,15 @@ def view_record():
         print(f"Error during prediction: {e}")
         return jsonify({'error': 'An error occurred while processing your request.'}), 500
 
+@app.route('/chat', methods=['POST'])
+def chat():
+    try:
+        data = request.get_json()
+        resp = data.get('resp','')
+        
+        return jsonify({'resp': resp})
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        return jsonify({'error': 'An error occurred while processing your request.'}), 500
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

@@ -6,6 +6,7 @@ import { Signin } from './pages/Signin';
 import { Userpage } from './pages/Userpage';
 import { Imsearch } from './pages/Imsearch';
 import { Services } from './pages/Services';
+import { Chat } from './pages/Chat';
 
 function App() {
 
@@ -33,6 +34,10 @@ function App() {
           <Route
             path="/services"
             element={<Services/>}
+          />
+          <Route
+            path="/chat"
+            element={<Chat/>}
           />
         </Routes>
       </Router>
