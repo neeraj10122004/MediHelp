@@ -10,6 +10,11 @@ import re
 from datetime import datetime
 import pymongo
 from pymongo import *
+from werkzeug.utils import secure_filename
+UPLOAD_FOLDER = "uploads"
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 genai.configure(api_key="AIzaSyDEWge2PzWvKDCLHkPFhD4xdsvB7GPSqss")
 cluster = MongoClient("mongodb+srv://root:root@cluster0.q6rbb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
@@ -128,6 +133,7 @@ CORS(app, resources={r"/create_verify_user": {"origins": "http://localhost:5173"
 CORS(app, resources={r"/add_record": {"origins": "http://localhost:5173"}})
 CORS(app, resources={r"/view_record": {"origins": "http://localhost:5173"}})
 CORS(app, resources={r"/chat": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/skin": {"origins": "http://localhost:5173"}})
 # Serve model files statically
 app.config['MODEL_DIR'] = os.path.join(os.getcwd(), 'models')
 
@@ -454,5 +460,40 @@ def chat():
     except Exception as e:
         print(f"Error during prediction: {e}")
         return jsonify({'error': 'An error occurred while processing your request.'}), 500
+
+
+@app.route('/skin', methods=['POST'])
+def skin():
+    print("hello")
+    try:
+        if 'file' not in request.files :
+            return jsonify({'error': 'no file found.'}), 400
+        file = request.files['file']
+        if file.filename=='':
+            return jsonify({'error': 'no selec ted filr.'}), 400
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER,filename)
+        file.save(filepath)
+        image = tf.keras.preprocessing.image.load_img(filepath,target_size=(128,128))
+        img_array = tf.keras.preprocessing.image.img_to_array(image)
+        img_array = np.expand_dims(img_array,axis=0)
+        img_array = img_array/255.0
+        skinmodel = tf.keras.models.load_model('trained_skin_disease_model2.h5')  
+        predictions = skinmodel.predict(img_array)
+        predict_class = np.argmax(predictions,axis=1)[0]
+        confidence = float(np.max(predictions))
+        train_list_mod=['Acne and Rosacea Photos', 'Actinic Keratosis Basal Cell Carcinoma and other Malignant Lesions', 'Atopic Dermatitis Photos', 'Eczema Photos', 'Nail Fungus and other Nail Disease', 'Psoriasis pictures Lichen Planus and related diseases']
+        print(train_list_mod[int(predict_class)-1])
+        print(confidence)
+        for file in os.listdir(UPLOAD_FOLDER):
+            file_path = os.path.join(UPLOAD_FOLDER, file)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        return jsonify({'disease': train_list_mod[int(predict_class)],'confidence':confidence})
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        return jsonify({'error': 'An error occurred while processing your request.'}), 500
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
