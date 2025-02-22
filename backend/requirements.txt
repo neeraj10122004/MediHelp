@@ -7,9 +7,3 @@ pandas
 google-generativeai
 requests
 pymongo
-datetime
-random
-os
-re
-json
-ast
